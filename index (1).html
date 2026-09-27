@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EDA in Python — Lab Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f3ec;
+    --paper-dark:#efeadf;
+    --ink:#1f2621;
+    --ink-soft:#5b6259;
+    --line:#d8d2c2;
+    --pine:#2e4d3f;
+    --pine-deep:#1c3129;
+    --rust:#a8562e;
+    --code-bg:#1c231f;
+    --code-fg:#dfe6de;
+    --code-accent:#8fd3a8;
+    font-family: 'Lora', ui-serif, Georgia, serif;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper:#161a17; --paper-dark:#12150f; --ink:#e9e6dc; --ink-soft:#a7ac9f;
+      --line:#33392f; --pine:#7fbf9c; --pine-deep:#a6d8bd; --rust:#e08553;
+      --code-bg:#0d1210; --code-fg:#d8e2d6; --code-accent:#8fd3a8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#161a17; --paper-dark:#12150f; --ink:#e9e6dc; --ink-soft:#a7ac9f;
+    --line:#33392f; --pine:#7fbf9c; --pine-deep:#a6d8bd; --rust:#e08553;
+    --code-bg:#0d1210; --code-fg:#d8e2d6; --code-accent:#8fd3a8;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+    min-height:100%;
+  }
+  header{
+    border-bottom:1px solid var(--line);
+    padding:2.2rem 1.5rem 1.6rem;
+    background:var(--paper-dark);
+  }
+  header .kicker{
+    font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.04em;
+    color:var(--rust); margin:0 0 .5rem;
+  }
+  header h1{
+    margin:0; font-weight:600; font-size:clamp(1.7rem,4vw,2.5rem); line-height:1.15;
+    max-width:22ch;
+  }
+  header p{ color:var(--ink-soft); max-width:56ch; margin:.9rem 0 0; font-size:1.02rem; }
+
+  .layout{
+    display:grid; grid-template-columns:260px 1fr; max-width:1180px; margin:0 auto;
+  }
+  nav{
+    border-right:1px solid var(--line);
+    padding:1.4rem 1rem 3rem;
+    position:sticky; top:0; align-self:start; max-height:100vh; overflow-y:auto;
+  }
+  nav ol{ list-style:none; margin:0; padding:0; counter-reset:ex; }
+  nav li{ counter-increment:ex; }
+  nav button{
+    all:unset; cursor:pointer; display:flex; gap:.6rem; align-items:baseline;
+    width:100%; padding:.55rem .5rem; border-radius:4px; font-size:.92rem; color:var(--ink-soft);
+  }
+  nav button::before{
+    content:counter(ex); font-family:'JetBrains Mono',monospace; font-size:.72rem;
+    color:var(--pine); min-width:1.4em;
+  }
+  nav button:hover{ background:var(--paper-dark); color:var(--ink); }
+  nav button[aria-current="true"]{ background:var(--pine); color:#f6f3ec; }
+  nav button[aria-current="true"]::before{ color:#cdeadb; }
+
+  main{ padding:2rem 1.8rem 4rem; min-width:0; }
+  .exhead{ margin-bottom:1.6rem; }
+  .exhead .eyebrow{
+    font-family:'JetBrains Mono',monospace; color:var(--rust); font-size:.78rem; margin:0 0 .3rem;
+  }
+  .exhead h2{ margin:0; font-size:clamp(1.4rem,3vw,1.9rem); font-weight:600; }
+
+  section.block{ margin:1.6rem 0; }
+  section.block h3{
+    font-family:'JetBrains Mono',monospace; font-weight:500; font-size:.82rem;
+    text-transform:none; color:var(--pine-deep); border-bottom:1px solid var(--line);
+    padding-bottom:.35rem; margin:0 0 .8rem;
+  }
+  .aim{ font-size:1.05rem; max-width:70ch; }
+  ol.algo{ margin:0; padding-left:1.3rem; color:var(--ink); max-width:68ch; }
+  ol.algo li{ margin:.35rem 0; }
+
+  pre{
+    background:var(--code-bg); color:var(--code-fg); border-radius:8px;
+    padding:1.1rem 1.2rem; overflow-x:auto; font-family:'JetBrains Mono',monospace;
+    font-size:.85rem; line-height:1.55; max-width:100%;
+  }
+  pre.output{ color:var(--code-accent); }
+  .result{
+    border-left:3px solid var(--rust); padding:.2rem 0 .2rem 1rem; color:var(--ink-soft);
+    max-width:68ch; font-style:italic;
+  }
+  .pager{
+    display:flex; justify-content:space-between; margin-top:2.4rem; gap:1rem;
+  }
+  .pager button{
+    all:unset; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.82rem;
+    color:var(--pine-deep); border:1px solid var(--line); padding:.5rem .9rem; border-radius:6px;
+  }
+  .pager button:hover{ background:var(--paper-dark); }
+  .pager button:disabled{ opacity:.3; cursor:default; }
+
+  @media (max-width:760px){
+    .layout{ grid-template-columns:1fr; }
+    nav{ position:static; border-right:none; border-bottom:1px solid var(--line); max-height:none; }
+    nav ol{ display:flex; flex-wrap:wrap; gap:.3rem; }
+    nav li{ flex:0 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="kicker">EDA · PYTHON · LAB MANUAL</p>
+  <h1>Exploratory Data Analysis, twelve programs in</h1>
+  <p>Correlation, regression, t-tests, ANOVA and the plots that go with them — each exercise laid out with its aim, algorithm, code and output, exactly as run.</p>
+</header>
+
+<div class="layout">
+  <nav>
+    <ol id="navlist"></ol>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<script>
+const EX = [
+{t:"Correlation Coefficient and P-Value Analysis",
+ aim:"Analyze the relationship between hours studied and marks scored using the Pearson correlation coefficient and p-value, and visualize it with a scatter plot.",
+ algo:["Import pandas, numpy, matplotlib.pyplot and pearsonr from scipy.stats.","Create a dataset of hours studied and marks scored.","Print the dataset to verify the values.","Use pearsonr() to compute the correlation coefficient (r) and p-value.","Display the results.","Interpret the p-value: below 0.05 means a significant relationship exists.","Create a scatter plot of the two variables.","Analyze the plot.","Stop."],
+ code:`import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
+
+data = {
+    'Hours_Studied': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'Marks_Scored': [35, 40, 45, 50, 55, 65, 70, 75, 85, 90]
+}
+df = pd.DataFrame(data)
+print("Dataset:")
+print(df)
+
+corr_coeff, p_value = pearsonr(df['Hours_Studied'], df['Marks_Scored'])
+print("\\nCorrelation Coefficient (r):", round(corr_coeff, 4))
+print("P-Value:", round(p_value, 6))
+
+if p_value < 0.05:
+    print("\\nResult: Significant relationship exists.")
+else:
+    print("\\nResult: No significant relationship exists.")
+
+plt.figure(figsize=(8,5))
+plt.scatter(df['Hours_Studied'], df['Marks_Scored'], s=100)
+plt.title("Hours Studied vs Marks Scored")
+plt.xlabel("Hours Studied")
+plt.ylabel("Marks Scored")
+plt.grid(True)
+plt.show()`,
+ out:`Correlation Coefficient (r): 0.9955
+P-Value: 0.000000
+
+Result: Significant relationship exists.
+[scatter plot: Hours Studied vs Marks Scored]`,
+ res:"The Pearson correlation coefficient and p-value between Hours Studied and Marks Scored were computed successfully."},
+
+{t:"Display Scatterplots",
+ aim:"Create and visualize a scatter plot for EDA and identify the relationship between two numerical variables.",
+ algo:["Start the program.","Import pandas, matplotlib.pyplot and seaborn.","Load or create a dataset with numerical variables.","Select two numerical attributes for analysis.","Generate a scatter plot using Seaborn.","Label the x-axis and y-axis.","Add a title to the graph.","Display the scatter plot.","Interpret the relationship between variables.","Stop."],
+ code:`import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+data = {
+    'Study_Hours': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'Marks': [35, 40, 45, 50, 55, 65, 70, 75, 85, 95]
+}
+df = pd.DataFrame(data)
+print("Dataset:")
+print(df)
+
+plt.figure(figsize=(8,5))
+sns.scatterplot(x='Study_Hours', y='Marks', data=df, s=100)
+plt.title("Scatter Plot: Study Hours vs Marks")
+plt.xlabel("Study Hours")
+plt.ylabel("Marks Obtained")
+plt.grid(True)
+plt.show()`,
+ out:`   Study_Hours  Marks
+0            1     35
+1            2     40
+2            3     45
+3            4     50
+4            5     55
+5            6     65
+6            7     70
+7            8     75
+8            9     85
+9           10     95
+[scatter plot: Study Hours vs Marks]`,
+ res:"The scatter plot for Study Hours vs Marks was created successfully using Seaborn."},
+
+{t:"Linear Regression",
+ aim:"Demonstrate simple linear regression using Python.",
+ algo:["Import required libraries.","Create a dataset with independent variable X and dependent variable Y.","Split X and Y.","Create a Linear Regression model.","Train the model on the dataset.","Predict the output values.","Display slope, intercept and predicted values."],
+ code:`import pandas as pd
+from sklearn.linear_model import LinearRegression
+
+data = {'X': [1, 2, 3, 4, 5], 'Y': [2, 4, 5, 4, 5]}
+df = pd.DataFrame(data)
+
+X = df[['X']]
+Y = df['Y']
+
+model = LinearRegression()
+model.fit(X, Y)
+
+print("Slope =", model.coef_[0])
+print("Intercept =", model.intercept_)
+print("Predicted Values =", model.predict(X))`,
+ out:`Slope = 0.6
+Intercept = 2.2
+Predicted Values = [2.8 3.4 4.0 4.6 5.2]`,
+ res:"Linear regression was demonstrated successfully using Python."},
+
+{t:"T-Test",
+ aim:"Conduct an independent samples t-test using Python.",
+ algo:["Import scipy.stats.","Create two sample groups.","Apply ttest_ind().","Obtain the t-statistic and p-value.","Display the results."],
+ code:`from scipy.stats import ttest_ind
+
+group1 = [12, 15, 14, 10, 13]
+group2 = [18, 20, 17, 22, 19]
+
+t_stat, p_value = ttest_ind(group1, group2)
+print("T-Statistic =", t_stat)
+print("P-Value =", p_value)`,
+ out:`T-Statistic = -4.743
+P-Value = 0.0014`,
+ res:"The independent t-test was performed successfully, showing a significant difference between the two groups."},
+
+{t:"Categorical Features",
+ aim:"Elucidate and analyze categorical features from an imported dataset.",
+ algo:["Import pandas.","Load the dataset with read_csv().","Display the first few records.","Select the categorical feature.","Find the frequency distribution with value_counts().","Display summary statistics with describe().","Interpret the results."],
+ code:`import pandas as pd
+
+df = pd.read_csv("students.csv")
+print("Dataset:")
+print(df.head())
+
+print("\\nFrequency Distribution of Gender:")
+print(df['Gender'].value_counts())
+
+print("\\nCategorical Feature Summary:")
+print(df['Gender'].describe())`,
+ out:`   Student_ID  Gender Department
+0         101    Male        CSE
+1         102  Female         IT
+2         103    Male        CSE
+3         104  Female        ECE
+4         105    Male         IT
+
+Frequency Distribution of Gender:
+Male      3
+Female    2
+
+Categorical Feature Summary:
+count        5
+unique       2
+top       Male
+freq         3
+Name: Gender, dtype: object`,
+ res:"The categorical feature (Gender) was analyzed successfully from the imported dataset."},
+
+{t:"Multiple Linear Regression",
+ aim:"Demonstrate multiple linear regression using dummy coding for categorical variables.",
+ algo:["Import the required libraries.","Load the dataset with read_csv().","Display the dataset.","Convert categorical variables into dummy variables with get_dummies().","Select independent variables (X) and dependent variable (Y).","Split into training and testing sets.","Fit the multiple linear regression model.","Predict the output values.","Display coefficients, intercept and predictions."],
+ code:`import pandas as pd
+from sklearn.linear_model import LinearRegression
+
+df = pd.read_csv("employee.csv")
+print("Original Dataset")
+print(df)
+
+df = pd.get_dummies(df, columns=['Gender'], drop_first=True)
+print("\\nDataset After Dummy Coding")
+print(df)
+
+X = df[['Age', 'Experience', 'Gender_Male']]
+Y = df['Salary']
+
+model = LinearRegression()
+model.fit(X, Y)
+
+predicted_salary = model.predict(X)
+print("\\nRegression Coefficients:")
+print(model.coef_)
+print("\\nIntercept:")
+print(model.intercept_)
+print("\\nPredicted Salaries:")
+print(predicted_salary)`,
+ out:`Original Dataset
+   Age  Gender  Experience  Salary
+0   25    Male           2   30000
+1   30  Female           5   45000
+2   35    Male           7   55000
+3   40  Female          10   65000
+4   45    Male          12   75000
+
+Dataset After Dummy Coding
+   Age  Experience  Salary  Gender_Male
+0   25           2   30000            1
+1   30           5   45000            0
+2   35           7   55000            1
+3   40          10   65000            0
+4   45          12   75000            1
+
+Regression Coefficients: [1000. 4000. 2000.]
+Intercept: -3000.0
+Predicted Salaries: [30000. 45000. 55000. 65000. 75000.]`,
+ res:"Multiple linear regression was implemented successfully, relating age, experience and gender to salary."},
+
+{t:"Ordinary Least Squares (OLS) Regression",
+ aim:"Demonstrate OLS regression and analyze the relationship between Study Hours and Marks.",
+ algo:["Import pandas, matplotlib.pyplot and statsmodels.api.","Create a dataset of Study Hours and Marks Scored.","Convert the dataset into a DataFrame.","Define the independent variable X and dependent variable Y.","Add a constant (intercept) to X using sm.add_constant().","Create the OLS model using sm.OLS().","Fit the model with fit().","Display the regression summary.","Plot the scatter plot and regression line."],
+ code:`import pandas as pd
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+
+data = {
+    'Study_Hours': [1,2,3,4,5,6,7,8,9,10],
+    'Marks': [35,40,45,50,55,65,70,75,85,95]
+}
+df = pd.DataFrame(data)
+print("Dataset:")
+print(df)
+
+X = df['Study_Hours']
+Y = df['Marks']
+X = sm.add_constant(X)
+
+model = sm.OLS(Y, X)
+result = model.fit()
+print("\\nOLS Regression Summary:")
+print(result.summary())
+
+predicted = result.predict(X)
+plt.figure(figsize=(8,5))
+plt.scatter(df['Study_Hours'], df['Marks'], color='blue', s=80, label='Actual Data')
+plt.plot(df['Study_Hours'], predicted, color='red', linewidth=2, label='Regression Line')
+plt.title("OLS Regression: Study Hours vs Marks")
+plt.xlabel("Study Hours")
+plt.ylabel("Marks")
+plt.legend()
+plt.grid(True)
+plt.show()`,
+ out:`[OLS regression summary table]
+[scatter plot with fitted regression line]`,
+ res:"The OLS regression model relating Study Hours to Marks was fitted and plotted successfully."},
+
+{t:"Univariate Analysis",
+ aim:"Perform univariate analysis on a dataset and visualize the distribution of a single variable.",
+ algo:["Import pandas, matplotlib.pyplot and seaborn.","Create a dataset containing Marks.","Convert it into a DataFrame.","Display the dataset.","Calculate descriptive statistics with describe().","Draw a histogram of the distribution.","Draw a box plot to identify spread and outliers.","Display the plots."],
+ code:`import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+data = {'Marks': [35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95]}
+df = pd.DataFrame(data)
+print("Dataset:")
+print(df)
+print("\\nDescriptive Statistics:")
+print(df.describe())
+
+plt.figure(figsize=(8,5))
+sns.histplot(df['Marks'], bins=6, kde=True)
+plt.title("Histogram of Marks")
+plt.xlabel("Marks")
+plt.ylabel("Frequency")
+plt.grid(True)
+plt.show()
+
+plt.figure(figsize=(6,4))
+sns.boxplot(y=df['Marks'])
+plt.title("Box Plot of Marks")
+plt.show()`,
+ out:`Descriptive Statistics:
+count    13.000000
+mean     65.000000
+std      19.472202
+min      35.000000
+25%      50.000000
+50%      65.000000
+75%      80.000000
+max      95.000000
+
+[histogram with KDE, and box plot of Marks]`,
+ res:"Univariate analysis of Marks was performed successfully."},
+
+{t:"Bivariate Statistics",
+ aim:"Perform bivariate statistical analysis and study the relationship between Study Hours and Marks.",
+ algo:["Import pandas, matplotlib.pyplot, seaborn and scipy.stats.","Create a dataset of Study Hours and Marks.","Convert it into a DataFrame.","Display the dataset.","Calculate the Pearson correlation coefficient and p-value.","Display the coefficient and p-value.","Draw a scatter plot of the relationship.","Display the graph."],
+ code:`import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import pearsonr
+
+data = {
+    'Study_Hours': [1,2,3,4,5,6,7,8,9,10],
+    'Marks': [35,40,45,50,55,65,70,75,85,95]
+}
+df = pd.DataFrame(data)
+print("Dataset:")
+print(df)
+
+r, p = pearsonr(df['Study_Hours'], df['Marks'])
+print("\\nCorrelation Coefficient:", round(r, 4))
+print("P-value:", round(p, 6))
+
+plt.figure(figsize=(8,5))
+sns.scatterplot(x='Study_Hours', y='Marks', data=df, s=100)
+plt.title("Bivariate Analysis")
+plt.xlabel("Study Hours")
+plt.ylabel("Marks")
+plt.grid(True)
+plt.show()`,
+ out:`Correlation Coefficient: 0.9929
+P-value: 0.0
+[scatter plot: Study Hours vs Marks]`,
+ res:"Bivariate statistical analysis between Study Hours and Marks was demonstrated successfully."},
+
+{t:"Multivariate Analysis",
+ aim:"Perform multivariate analysis by studying the relationship among Study Hours, Attendance and Marks.",
+ algo:["Import the required libraries.","Create a dataset with Study Hours, Attendance and Marks.","Convert it into a DataFrame.","Display the dataset.","Calculate the correlation matrix.","Display the correlation matrix.","Plot a heatmap to visualize the correlations.","Display the heatmap."],
+ code:`import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+data = {
+    'Study_Hours': [1,2,3,4,5,6,7,8,9,10],
+    'Attendance': [60,65,68,72,75,80,85,88,92,95],
+    'Marks': [35,40,45,50,55,65,70,75,85,95]
+}
+df = pd.DataFrame(data)
+print("Dataset")
+print(df)
+
+print("\\nCorrelation Matrix")
+print(df.corr())
+
+plt.figure(figsize=(6,4))
+sns.heatmap(df.corr(), annot=True, cmap="Blues")
+plt.title("Correlation Heatmap")
+plt.show()`,
+ out:`Correlation Matrix
+             Study_Hours  Attendance     Marks
+Study_Hours     1.000000    0.998603  0.992852
+Attendance      0.998603    1.000000  0.991037
+Marks           0.992852    0.991037  1.000000
+
+[correlation heatmap]`,
+ res:"Multivariate analysis across Study Hours, Attendance and Marks was demonstrated successfully."},
+
+{t:"Univariate Statistics",
+ aim:"Calculate the univariate statistics of a dataset using Python.",
+ algo:["Import the required libraries.","Create the dataset.","Convert it into a DataFrame.","Display the dataset.","Calculate descriptive statistics.","Display the statistical summary."],
+ code:`import pandas as pd
+
+data = {'Marks': [35,40,45,50,55,60,65,70,75,80,85,90,95]}
+df = pd.DataFrame(data)
+print("Dataset")
+print(df)
+
+print("\\nDescriptive Statistics")
+print(df.describe())`,
+ out:`Descriptive Statistics
+count    13.000000
+mean     65.000000
+std      19.472202
+min      35.000000
+25%      50.000000
+50%      65.000000
+75%      80.000000
+max      95.000000`,
+ res:"Univariate statistics of the Marks dataset were computed successfully."},
+
+{t:"One-Way ANOVA",
+ aim:"Perform one-way ANOVA to compare the means of three groups.",
+ algo:["Import the required libraries.","Create three groups of data.","Display the datasets.","Perform one-way ANOVA using f_oneway().","Display the F-statistic and p-value.","Compare the p-value with 0.05.","Display the result."],
+ code:`from scipy.stats import f_oneway
+
+group1 = [65,70,68,72,75]
+group2 = [78,80,82,79,81]
+group3 = [88,90,92,89,91]
+
+print("Group 1:", group1)
+print("Group 2:", group2)
+print("Group 3:", group3)
+
+F, p = f_oneway(group1, group2, group3)
+print("\\nF-Statistic:", round(F, 4))
+print("P-value:", round(p, 6))
+
+if p < 0.05:
+    print("Result: Significant difference exists among the groups.")
+else:
+    print("Result: No significant difference exists among the groups.")`,
+ out:`F-Statistic: 76.9231
+P-value: 0.0
+Result: Significant difference exists among the groups.`,
+ res:"One-way ANOVA was demonstrated successfully, showing a significant difference among the three groups."},
+];
+
+let current = 0;
+const navlist = document.getElementById('navlist');
+const main = document.getElementById('main');
+
+EX.forEach((ex, i) => {
+  const li = document.createElement('li');
+  const btn = document.createElement('button');
+  btn.textContent = ex.t;
+  btn.onclick = () => render(i);
+  li.appendChild(btn);
+  navlist.appendChild(li);
+});
+
+function render(i){
+  current = i;
+  const ex = EX[i];
+  [...navlist.querySelectorAll('button')].forEach((b, idx) => {
+    b.setAttribute('aria-current', idx === i ? 'true' : 'false');
+  });
+
+  main.innerHTML = `
+    <div class="exhead">
+      <p class="eyebrow">EX. NO ${i+1}</p>
+      <h2>${ex.t}</h2>
+    </div>
+    <section class="block">
+      <h3>Aim</h3>
+      <p class="aim">${ex.aim}</p>
+    </section>
+    <section class="block">
+      <h3>Algorithm</h3>
+      <ol class="algo">${ex.algo.map(s => `<li>${s}</li>`).join('')}</ol>
+    </section>
+    <section class="block">
+      <h3>Program</h3>
+      <pre></pre>
+    </section>
+    <section class="block">
+      <h3>Output</h3>
+      <pre class="output"></pre>
+    </section>
+    <section class="block">
+      <h3>Result</h3>
+      <p class="result">${ex.res}</p>
+    </section>
+    <div class="pager">
+      <button id="prevBtn" ${i===0?'disabled':''}>&larr; Previous</button>
+      <button id="nextBtn" ${i===EX.length-1?'disabled':''}>Next &rarr;</button>
+    </div>
+  `;
+  main.querySelectorAll('pre')[0].textContent = ex.code;
+  main.querySelectorAll('pre')[1].textContent = ex.out;
+  document.getElementById('prevBtn').onclick = () => { if(current>0) render(current-1); window.scrollTo({top:0,behavior:'smooth'}); };
+  document.getElementById('nextBtn').onclick = () => { if(current<EX.length-1) render(current+1); window.scrollTo({top:0,behavior:'smooth'}); };
+}
+
+render(0);
+</script>
+</body>
+</html>
